@@ -1,0 +1,54 @@
+# version de docker
+version: '3.7'
+
+# inicio de los servicios a utilizar
+services:
+
+# servicio de python con django
+  pqrs:
+    container_name: ARSAC
+    build:
+      context: ./SOFTWARE_TESIS/ARSAC/Backend/ARSAC/
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./SOFTWARE_TESIS/ARSAC/Backend/ARSAC/:/usr/src/PQRS/
+    ports:
+      - 8003:8000
+    env_file:
+      - ./SOFTWARE_TESIS/envs/Arsac/.env.dev
+    networks:
+        - dev_env_network
+
+# entorno de pgadmin para uso de base de datos
+  pgadmin:
+    container_name: pgadminps_arsac
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: aldair.pantoja.velasquez@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: 12345
+    ports:
+      - "8081:80"
+    networks:
+        - dev_env_network
+
+# imagen de postgres para la administracion de la base de datos
+
+  arsacbd:
+    container_name: arsacbd
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5439:5439"
+    volumes:
+      - ./data/pqrs:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_USER: lenix
+      POSTGRES_DB: arsac
+    networks:
+        - dev_env_network
+
+networks:
+  dev_env_network:
+    driver: bridge
